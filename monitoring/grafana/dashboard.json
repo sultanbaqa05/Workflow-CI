@@ -1,0 +1,241 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "title": "1. Total Prediction Requests",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(model_request_total)",
+          "legendFormat": "Total Requests"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 100 },
+              { "color": "red", "value": 500 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "2. Prediction Errors",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(model_prediction_errors_total)",
+          "legendFormat": "Total Errors"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "3. Model F1 Score",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "model_best_f1_score",
+          "legendFormat": "F1 Score"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 0.6 },
+              { "color": "green", "value": 0.8 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "4. Active Requests",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "targets": [
+        {
+          "expr": "model_active_requests",
+          "legendFormat": "Active"
+        }
+      ]
+    },
+    {
+      "title": "5. Request Latency (p50, p90, p99)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(model_request_latency_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.90, sum(rate(model_request_latency_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p90"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(model_request_latency_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p99"
+        }
+      ]
+    },
+    {
+      "title": "6. Predictions by Class",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "targets": [
+        {
+          "expr": "sum by (predicted_class) (model_prediction_total)",
+          "legendFormat": "{{predicted_class}}"
+        }
+      ]
+    },
+    {
+      "title": "7. CPU Usage (%)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 12 },
+      "targets": [
+        {
+          "expr": "system_cpu_usage_percent",
+          "legendFormat": "CPU %"
+        }
+      ]
+    },
+    {
+      "title": "8. Memory Usage (%)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 12 },
+      "targets": [
+        {
+          "expr": "system_memory_usage_percent",
+          "legendFormat": "Memory %"
+        }
+      ]
+    },
+    {
+      "title": "9. Request Rate (req/s)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 12 },
+      "targets": [
+        {
+          "expr": "sum(rate(model_request_total[1m]))",
+          "legendFormat": "req/s"
+        }
+      ]
+    },
+    {
+      "title": "10. Prediction Confidence Distribution",
+      "type": "histogram",
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 18 },
+      "targets": [
+        {
+          "expr": "sum(rate(model_prediction_confidence_bucket[5m])) by (le)",
+          "legendFormat": "{{le}}"
+        }
+      ]
+    },
+    {
+      "title": "11. Model Performance Metrics",
+      "type": "table",
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 18 },
+      "targets": [
+        { "expr": "model_best_accuracy", "legendFormat": "Accuracy" },
+        { "expr": "model_best_f1_score", "legendFormat": "F1 Score" },
+        { "expr": "model_best_precision", "legendFormat": "Precision" },
+        { "expr": "model_best_recall", "legendFormat": "Recall" }
+      ]
+    },
+    {
+      "title": "12. Disk Usage (%)",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 24 },
+      "targets": [
+        {
+          "expr": "system_disk_usage_percent",
+          "legendFormat": "Disk %"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 70 },
+              { "color": "red", "value": 90 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "13. Health Check Count",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 24 },
+      "targets": [
+        {
+          "expr": "model_health_check_total",
+          "legendFormat": "Health Checks"
+        }
+      ]
+    },
+    {
+      "title": "14. Memory Used (MB)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 24 },
+      "targets": [
+        {
+          "expr": "system_memory_used_mb",
+          "legendFormat": "Memory MB"
+        }
+      ]
+    },
+    {
+      "title": "15. HTTP Requests Total",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 24 },
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total[5m])) by (endpoint)",
+          "legendFormat": "{{endpoint}}"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["mlops", "model-monitoring", "dicoding"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "title": "Prediksi Kelulusan Mahasiswa - sultan",
+  "uid": "ml-monitoring-dashboard",
+  "version": 1
+}

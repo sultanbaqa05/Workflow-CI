@@ -34,13 +34,6 @@ DAGSHUB_USERNAME = os.environ.get("DAGSHUB_USERNAME", "baqa27")
 DAGSHUB_REPO = os.environ.get("DAGSHUB_REPO", "prediksi-kelulusan-mahasiswa")
 DAGSHUB_TOKEN = os.environ.get("DAGSHUB_TOKEN", "")
 
-# MLflow Project injects MLFLOW_RUN_ID for its parent run. This script creates
-# one run per model, so clear the injected parent run id to avoid tracking URI
-# mismatches when the script switches to DagsHub or a local tracking server.
-if os.environ.get("MLFLOW_RUN_ID"):
-    os.environ.pop("MLFLOW_RUN_ID", None)
-    print("[INFO] Cleared MLflow Project parent run id; model runs will be logged separately.")
-
 if DAGSHUB_TOKEN:
     os.environ["MLFLOW_TRACKING_USERNAME"] = DAGSHUB_USERNAME
     os.environ["MLFLOW_TRACKING_PASSWORD"] = DAGSHUB_TOKEN
@@ -108,21 +101,9 @@ def save_artifacts(y_test, y_pred, model, feature_names, class_names, model_name
 
 
 def train_models_autolog():
-    # Robust path handling for both MLProject folder runs and root python runs
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    local_data_dir = os.path.join(current_dir, "student_data_preprocessing")
-    
-    if os.path.exists(local_data_dir) and os.path.isfile(os.path.join(local_data_dir, "X_train.csv")):
-        data_dir = local_data_dir
-        artifacts_dir = os.path.join(current_dir, "artifacts")
-        print(f"[INFO] Using local MLProject preprocessed data directory: {data_dir}")
-    else:
-        # Fallback to parent workspace directories
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        data_dir = os.path.join(base_dir, "data", "processed")
-        artifacts_dir = os.path.join(base_dir, "artifacts")
-        print(f"[INFO] Using fallback preprocessed data directory: {data_dir}")
-        
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    data_dir = os.path.join(base_dir, "data", "processed")
+    artifacts_dir = os.path.join(base_dir, "artifacts")
     os.makedirs(artifacts_dir, exist_ok=True)
 
     X_train, X_test, y_train, y_test, le_target = load_processed_data(data_dir)

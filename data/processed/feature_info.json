@@ -1,0 +1,32 @@
+{
+  "feature_names": [
+    "ips_1",
+    "ips_2",
+    "ips_3",
+    "ips_4",
+    "ips_5",
+    "ips_6",
+    "ips_7",
+    "jumlah_sks",
+    "umur",
+    "jumlah_tanggungan",
+    "penghasilan_ortu",
+    "ipk_rata_rata",
+    "ips_trend",
+    "ips_std",
+    "sks_ratio",
+    "jenis_kelamin_Perempuan",
+    "asal_sekolah_SMA",
+    "asal_sekolah_SMK",
+    "organisasi_Ya",
+    "beasiswa_Ya"
+  ],
+  "n_features": 20,
+  "n_train_samples": 800,
+  "n_test_samples": 200,
+  "target_classes": [
+    "Drop Out",
+    "Lulus Tepat Waktu",
+    "Lulus Terlambat"
+  ]
+}

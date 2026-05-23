@@ -53,7 +53,7 @@ jobs:
           DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
           DAGSHUB_REPO: ${{ secrets.DAGSHUB_REPO }}
           DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
-        run: mlflow run MLProject --env-manager=local
+        run: mlflow run MLProject --env-manager=local --experiment-name Prediksi_Kelulusan_Mahasiswa_Autolog
 
       - name: Run modelling tuning (manual log)
         env:
@@ -62,18 +62,25 @@ jobs:
           DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
         run: python src/modelling_tuning.py
 
-      - name: Get latest MLflow run_id
+      - name: Get best tuned MLflow model URI
         run: |
           python -c "
-          import os, glob
-          run_dirs = glob.glob('mlruns/0/*/') + glob.glob('mlruns/1/*/')
-          run_dirs = [d for d in run_dirs if os.path.exists(os.path.join(d, 'meta.yaml'))]
-          if run_dirs:
-              latest_run = max(run_dirs, key=os.path.getmtime)
-              run_id = os.path.basename(latest_run.rstrip('/\\\\'))
-              print(f'Latest MLflow run_id: {run_id}')
-          else:
-              print('No local MLflow runs found.')
+          import json
+          from pathlib import Path
+
+          metric_path = Path('artifacts/metric_info_tuned.json')
+          if not metric_path.exists():
+              metric_path = Path('artifacts/metric_info.json')
+
+          info = json.loads(metric_path.read_text())
+          best_model = info.get('best_model') or info.get('model_name')
+          run_id = info['results'][best_model]['run_id'] if 'results' in info else info['run_id']
+
+          with open('$GITHUB_ENV', 'a') as env:
+              env.write(f'MODEL_URI=runs:/{run_id}/model\n')
+
+          print(f'Best model: {best_model}')
+          print(f'Model URI: runs:/{run_id}/model')
           "
 
       - name: Upload MLflow artifacts
@@ -123,16 +130,19 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: |
-            ${{ env.DOCKER_IMAGE }}:latest
-            ${{ env.DOCKER_IMAGE }}:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+      - name: Build Docker image with MLflow
+        env:
+          MLFLOW_TRACKING_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
+          MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
+          MLFLOW_TRACKING_URI: https://dagshub.com/${{ secrets.DAGSHUB_USERNAME }}/${{ secrets.DAGSHUB_REPO }}.mlflow
+        run: |
+          mlflow models build-docker --model-uri "$MODEL_URI" --name "${{ env.DOCKER_IMAGE }}:latest" --env-manager=local
+          docker tag "${{ env.DOCKER_IMAGE }}:latest" "${{ env.DOCKER_IMAGE }}:${{ github.sha }}"
+
+      - name: Push Docker image
+        run: |
+          docker push "${{ env.DOCKER_IMAGE }}:latest"
+          docker push "${{ env.DOCKER_IMAGE }}:${{ github.sha }}"
 
       - name: Verify Docker image
         run: |

@@ -1,0 +1,42 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Distribution
+*.egg-info/
+dist/
+build/
+
+# Submission package (generated)
+SMSML_*/
+
+# Panduan files (not needed in repo)
+mml panduan/
+mml.docx
+mml.pdf
+mml.zip
+mml.txt
+
+# Local runs and screenshot assets
+mlruns/
+artifacts/
+real_screenshots/
+

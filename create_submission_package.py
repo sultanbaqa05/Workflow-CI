@@ -33,8 +33,8 @@ import sys
 # CONFIG - Sesuaikan dengan data Anda
 # ============================================================
 STUDENT_NAME = "Sultan"
-GITHUB_EKSPERIMEN = "https://github.com/baqa27/Eksperimen_SML_Sultan"
-GITHUB_WORKFLOW_CI = "https://github.com/baqa27/Workflow-CI"
+GITHUB_EKSPERIMEN = "https://github.com/sultanbaqa05/Eksperimen_SML_Sultan"
+GITHUB_WORKFLOW_CI = "https://github.com/sultanbaqa05/Workflow-CI"
 
 # ============================================================
 # Paths

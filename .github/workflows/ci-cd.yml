@@ -121,6 +121,42 @@ jobs:
           name: processed-data
           path: data/processed/
 
+      - name: Set up Python 3.12.7
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.7"
+
+      - name: Install MLflow for Docker build
+        run: |
+          python -m pip install --upgrade pip
+          pip install mlflow==2.19.0
+
+      - name: Get best tuned MLflow model URI
+        run: |
+          python -c "
+          import json
+          from pathlib import Path
+
+          metric_path = Path('artifacts/metric_info_tuned.json')
+          if not metric_path.exists():
+              metric_path = Path('artifacts/metric_info.json')
+
+          info = json.loads(metric_path.read_text())
+          best_model = info.get('best_model') or info.get('model_name')
+          run_id = info['results'][best_model]['run_id'] if 'results' in info else info['run_id']
+
+          with open('$GITHUB_ENV', 'a') as env:
+              env.write(f'MODEL_URI=runs:/{run_id}/model\n')
+
+          print(f'Best model: {best_model}')
+          print(f'Model URI: runs:/{run_id}/model')
+          "
+
+      - name: Validate Docker secrets
+        run: |
+          test -n "${{ secrets.DOCKER_USERNAME }}" || (echo "DOCKER_USERNAME is missing" && exit 1)
+          test -n "${{ secrets.DOCKER_PASSWORD }}" || (echo "DOCKER_PASSWORD is missing" && exit 1)
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
